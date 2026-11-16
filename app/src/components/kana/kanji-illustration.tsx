@@ -280,8 +280,30 @@ function look(id: string, theme?: string): Look {
     case "yen":
       return { tint: "#fff3c4", color: "#8d4a2b", w: 5, decor: (
         <g>
-          <rect x="14" y="14" width="82" height="88" rx="10" fill="#e5483f" opacity="0.25" />
-          <circle cx="54.5" cy="70" r="12" fill="#f7cf55" stroke={INK} strokeWidth="1" />
+          <circle cx="54.5" cy="54.5" r="42" fill="#f7cf55" opacity="0.55" stroke="#e0a82e" strokeWidth="3" />
+          <text x="54.5" y="76" textAnchor="middle" fontSize="60" fontWeight="700" fontFamily="system-ui, sans-serif" fill="#e0a82e" opacity="0.6">¥</text>
+        </g>
+      ) };
+    case "cent":
+      return { tint: "#fff5ef", color: "#6b4a3a", w: 5, decor: (
+        <g>
+          <ellipse cx="54.5" cy="55" rx="46" ry="44" fill="none" stroke="#e5483f" strokeWidth="4" strokeLinecap="round" strokeDasharray="250 14" opacity="0.7" transform="rotate(-20 54.5 55)" />
+        </g>
+      ) };
+    case "mille":
+      return { tint: "#eef6fb", color: "#2f5f8f", w: 5, decor: (
+        <g>
+          <rect x="72" y="4" width="34" height="22" rx="6" fill="#fff" stroke="#6aa9d8" strokeWidth="1.6" />
+          <text x="89" y="21" textAnchor="middle" fontSize="15" fontWeight="700" fontFamily="system-ui, sans-serif" fill="#2f5f8f">1k</text>
+        </g>
+      ) };
+    case "dix-mille":
+      return { tint: "#eef6ea", color: "#5a4a2b", w: 5, decor: (
+        <g>
+          <rect x="6" y="20" width="97" height="62" rx="6" fill="#cfe8c6" stroke="#6aa36a" strokeWidth="2" />
+          <rect x="11" y="25" width="87" height="52" rx="4" fill="none" stroke="#6aa36a" strokeWidth="1" strokeDasharray="3 3" />
+          <text x="15" y="38" fontSize="9" fontWeight="700" fontFamily="system-ui, sans-serif" fill="#4f8a4f">10000</text>
+          <text x="54.5" y="103" textAnchor="middle" fontSize="12" fontWeight="600" fontFamily="system-ui, sans-serif" fill="#4f8a4f">10 000 ¥</text>
         </g>
       ) };
     default:

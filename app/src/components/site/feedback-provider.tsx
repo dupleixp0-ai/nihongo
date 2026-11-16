@@ -19,9 +19,15 @@ export function FeedbackProvider() {
       playFeedback("tap");
     };
     document.addEventListener("pointerdown", onPointerDown, { passive: true });
+    document.addEventListener("touchend", onPointerDown, { passive: true });
+    document.addEventListener("keydown", onPointerDown);
+    document.addEventListener("visibilitychange", onPointerDown);
     document.addEventListener("click", onClick);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("touchend", onPointerDown);
+      document.removeEventListener("keydown", onPointerDown);
+      document.removeEventListener("visibilitychange", onPointerDown);
       document.removeEventListener("click", onClick);
     };
   }, []);

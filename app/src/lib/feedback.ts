@@ -84,6 +84,8 @@ let ctx: AudioContext | null = null;
 
 function audio(): AudioContext | null {
   if (typeof window === "undefined") return null;
+  // Contexte fermé (le système l'a libéré) : on en recrée un.
+  if (ctx && ctx.state === "closed") ctx = null;
   if (!ctx) {
     const Ctor: AudioCtor | undefined = window.AudioContext ?? (window as unknown as { webkitAudioContext?: AudioCtor }).webkitAudioContext;
     if (!Ctor) return null;
@@ -93,16 +95,35 @@ function audio(): AudioContext | null {
       return null;
     }
   }
-  if (ctx.state === "suspended") void ctx.resume().catch(() => {});
   return ctx;
+}
+
+/**
+ * Réveille le contexte audio s'il ne tourne pas. Safari le met en « suspended » au départ, puis en « interrupted »
+ * (synthèse vocale, appel, changement d'onglet) : dans les deux cas il faut resume(), et les notes ne doivent être
+ * programmées qu'une fois l'horloge repartie, sinon elles tombent dans le vide.
+ */
+function ensureRunning(c: AudioContext): Promise<boolean> {
+  if (c.state === "running") return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(c.state === "running"), 400);
+    c.resume().then(
+      () => {
+        clearTimeout(timer);
+        resolve(c.state === "running");
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(false);
+      },
+    );
+  });
 }
 
 type Note = { f: number; at: number; dur: number; gain?: number; type?: OscillatorType; slideTo?: number };
 
-function play(notes: Note[]) {
-  const c = audio();
-  if (!c) return;
-  const t0 = c.currentTime + 0.01;
+function schedule(c: AudioContext, notes: Note[]) {
+  const t0 = c.currentTime + 0.02;
   for (const n of notes) {
     const osc = c.createOscillator();
     const g = c.createGain();
@@ -117,6 +138,18 @@ function play(notes: Note[]) {
     osc.start(t0 + n.at);
     osc.stop(t0 + n.at + n.dur + 0.03);
   }
+}
+
+function play(notes: Note[]) {
+  const c = audio();
+  if (!c) return;
+  if (c.state === "running") {
+    schedule(c, notes);
+    return;
+  }
+  void ensureRunning(c).then((ok) => {
+    if (ok) schedule(c, notes);
+  });
 }
 
 const SOUNDS: Record<FeedbackKind, Note[]> = {
@@ -199,7 +232,23 @@ export function playFeedback(kind: FeedbackKind, force = false) {
   if (prefs.haptics && canVibrate()) vibrate(kind, prefs.level);
 }
 
-/** Réveille l'audio au premier geste (iOS exige une interaction avant le premier son). */
+/**
+ * Réveille l'audio à chaque geste (iOS et Safari exigent une interaction) et joue un instant de silence,
+ * ce qui « déverrouille » vraiment la sortie sonore.
+ */
 export function unlockAudio() {
-  audio();
+  const c = audio();
+  if (!c) return;
+  void ensureRunning(c).then((ok) => {
+    if (!ok) return;
+    try {
+      const buf = c.createBuffer(1, 1, 22050);
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      src.connect(c.destination);
+      src.start(0);
+    } catch {
+      // sans importance : le contexte tourne déjà
+    }
+  });
 }
