@@ -9,14 +9,52 @@ type Look = { tint: string; color: string; w?: number; decor: React.ReactNode };
 
 const NUMBERS = ["un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix"];
 
-function Coins({ n }: { n: number }) {
-  return (
-    <g stroke={INK} strokeWidth="0.8" fill="#f7cf55">
-      {Array.from({ length: n }, (_, i) => (
-        <circle key={i} cx={54.5 - ((n - 1) * 9.5) / 2 + i * 9.5} cy="103" r="3.6" />
+/** Un petit repère par nombre : barres, carré, chiffre caché, hexagone, compas… derrière les traits du kanji. */
+function numberDecor(n: number) {
+  /** Pastille en haut à droite : n barres, comme les signes − = ☰. */
+  const badge = (count: number) => (
+    <g>
+      <rect x="86" y="3" width="20" height="20" rx="5" fill="#fff3d6" stroke="#e8a64a" strokeWidth="1.5" />
+      {Array.from({ length: count }, (_, i) => (
+        <rect key={i} x="90" y={13 - ((count - 1) * 4) / 2 + i * 4 - 1.25} width="12" height="2.5" rx="1.25" fill="#c9852a" />
       ))}
     </g>
   );
+  const digit = (ch: string, flip?: boolean) => (
+    <text x="54.5" y="88" textAnchor="middle" fontSize="92" fontWeight="700" fontFamily="system-ui, sans-serif" fill="#f0c27a" opacity="0.55" transform={flip ? "translate(109 0) scale(-1 1)" : undefined}>{ch}</text>
+  );
+  switch (n) {
+    case 1:
+      return badge(1);
+    case 2:
+      return badge(2);
+    case 3:
+      return badge(3);
+    case 4:
+      return <rect x="18" y="14" width="73" height="73" rx="5" fill="none" stroke="#e8a64a" strokeWidth="3" strokeDasharray="9 5" opacity="0.8" />;
+    case 5:
+      return digit("5");
+    case 6:
+      return <polygon points="54.5,10 92,31.5 92,77.5 54.5,99 17,77.5 17,31.5" fill="#fbe0a6" stroke="#e8a64a" strokeWidth="2.5" opacity="0.85" />;
+    case 7:
+      return digit("7", true);
+    case 8:
+      return (
+        <g stroke="#e8a64a" strokeWidth="3.5" strokeLinecap="round" fill="none" opacity="0.85">
+          <circle cx="54.5" cy="14" r="5" fill="#fbe0a6" />
+          <path d="M54.5 19 L22 98 M54.5 19 L87 98" />
+          <path d="M22 98 q-4 4 -8 0 M87 98 q4 4 8 0" />
+        </g>
+      );
+    case 9:
+      return digit("9");
+    default:
+      return (
+        <g stroke="#e8a64a" strokeWidth="5" strokeLinecap="round" opacity="0.7">
+          <path d="M22 22 L87 87 M87 22 L22 87" />
+        </g>
+      );
+  }
 }
 
 function look(id: string, theme?: string): Look {
@@ -24,12 +62,7 @@ function look(id: string, theme?: string): Look {
   if (n > 0) {
     return {
       tint: "#fdf0d5", color: "#a07a52", w: 5,
-      decor: (
-        <>
-          <path d="M0 97 H109 V112 H0 Z" fill="#e3c9a0" />
-          <Coins n={n} />
-        </>
-      ),
+      decor: numberDecor(n),
     };
   }
   switch (id) {
