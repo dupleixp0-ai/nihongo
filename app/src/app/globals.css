@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+/* Palette : papier bleuté, encre indigo, un seul rouge (sceau) utilisé avec parcimonie. */
+@theme {
+  --color-paper: #eef1f5;
+  --color-sheet: #fafbfc;
+  --color-ink: #17233a;
+  --color-muted: #55637a;
+  --color-line: #c5cdd8;
+  --color-guide: #8d9bb0;
+  --color-indigo: #2c4a8c;
+  --color-indigo-deep: #223a70;
+  --color-seal: #b8322a;
+  /* Surfaces et textes dérivés, redéfinis en mode sombre. */
+  --color-seal-soft: #fbf3f2;
+  --color-indigo-soft: #eef2fa;
+  --color-on-indigo: #ffffff;
+  --color-contrast: #17233a;
+  --color-on-contrast: #ffffff;
+  /* Encre des grands caractères et du tracé (choix débloqué par les sceaux). */
+  --color-brush: #17233a;
+
+  --font-sans: "Schibsted Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-kana: "Klee One", "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+/* Mode sombre : nuit bleu encre, mêmes rôles de couleur. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  color-scheme: dark;
+  --color-paper: #0f1626;
+  --color-sheet: #172036;
+  --color-ink: #e7ecf5;
+  --color-muted: #9aa8bf;
+  --color-line: #2e3b57;
+  --color-guide: #56678a;
+  --color-indigo: #91a9ee;
+  --color-indigo-deep: #b6c6f6;
+  --color-seal: #e0675d;
+  --color-seal-soft: #2a1b24;
+  --color-indigo-soft: #18233f;
+  --color-on-indigo: #0f1626;
+  --color-contrast: #e7ecf5;
+  --color-on-contrast: #0f1626;
+  --color-brush: #e7ecf5;
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--color-indigo);
+  outline-offset: 3px;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Sensation d'appli sur écran tactile : pas de « tirer pour rafraîchir » ni de rebond de la page, pas de sélection
+   ni de menu contextuel sur les boutons et la barre du bas, pas de délai ni de zoom au double toucher. */
+html {
+  overscroll-behavior-y: none;
+}
+button,
+nav,
+summary,
+[role="tab"],
+[role="switch"],
+[role="radio"] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+a,
+button,
+input,
+select,
+summary,
+[role="button"] {
+  touch-action: manipulation;
+}
+img {
+  -webkit-user-drag: none;
+}
+
+/* Écran de lancement : seulement quand l'appli est installée (écran d'accueil, appli native), jamais dans un onglet. */
+.launch-screen {
+  display: none;
+}
+@media (display-mode: standalone) {
+  .launch-screen {
+    display: grid;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    place-items: center;
+    background: var(--color-paper);
+    pointer-events: none;
+    animation: launch-out 0.35s ease 0.55s forwards;
+  }
+}
+@keyframes launch-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .launch-screen {
+    animation-duration: 0.01s;
+    animation-delay: 0.3s;
+  }
+}
+
+/* Écran tactile (téléphone, tablette) : pas de barre de défilement visible, comme une appli native.
+   Le défilement fonctionne toujours ; la souris (ordinateur) garde ses barres. */
+@media (pointer: coarse) {
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Papier quadrillé (genkō yōshi) : motif discret pour les zones d'accent. */
+.bg-genko {
+  background-color: var(--color-sheet);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--color-line) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--color-line) 55%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-indigo) 22%, transparent);
+}
+
+/* Flamme d'apprentissage : vacillement léger, coupé si l'appareil demande moins d'animations. */
+@keyframes flame-flicker {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  25% { transform: scale(0.98, 1.04) skewX(-2deg); }
+  50% { transform: scale(1.02, 0.97) skewX(1.5deg); }
+  75% { transform: scale(0.99, 1.02) skewX(-1deg); }
+}
+@keyframes flame-waver {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); opacity: 1; }
+  30% { transform: scale(0.94, 1.06) skewX(-5deg); opacity: 0.85; }
+  60% { transform: scale(1.04, 0.92) skewX(4deg); opacity: 1; }
+}
+.flame-lit { transform-origin: 50% 95%; transform-box: fill-box; animation: flame-flicker 2.4s ease-in-out infinite; }
+.flame-waver { transform-origin: 50% 95%; transform-box: fill-box; animation: flame-waver 1.1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .flame-lit, .flame-waver { animation: none; }
+}
+
+/* Encres (data-ink) : une teinte pour le clair, une pour le sombre. */
+:root[data-ink="ai"] { --color-brush: #2c4a8c; }
+:root.dark[data-ink="ai"] { --color-brush: #91a9ee; }
+:root[data-ink="shu"] { --color-brush: #b8322a; }
+:root.dark[data-ink="shu"] { --color-brush: #e0675d; }
+:root[data-ink="cha"] { --color-brush: #7a4a26; }
+:root.dark[data-ink="cha"] { --color-brush: #d6a77a; }
+:root[data-ink="matsu"] { --color-brush: #2f6b4a; }
+:root.dark[data-ink="matsu"] { --color-brush: #7fc8a0; }
+
+/* Flammes (data-flame) : contour, cœur, centre. */
+:root { --flame-outer: var(--color-seal); --flame-inner: #f08a3c; --flame-core: #ffd36b; }
+:root[data-flame="kin"] { --flame-outer: #c98a12; --flame-inner: #f2b33d; --flame-core: #fff1b8; }
+:root[data-flame="ao"] { --flame-outer: #3d5fb0; --flame-inner: #7fa2f0; --flame-core: #dbe6ff; }
+:root[data-flame="sakura"] { --flame-outer: #d0587e; --flame-inner: #f29bb5; --flame-core: #ffe1ea; }
+:root[data-flame="midori"] { --flame-outer: #1f8a62; --flame-inner: #4cc28f; --flame-core: #c9f2de; }
+:root[data-flame="murasaki"] { --flame-outer: #6b3fa0; --flame-inner: #a77bd8; --flame-core: #eadcff; }
+
+/* Langue de l'interface : la règle qui masque les autres langues est dans le <head> (src/i18n/lang.ts, langCss). */
